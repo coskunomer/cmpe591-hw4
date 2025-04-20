@@ -2,6 +2,7 @@ import torch
 import torchvision.transforms as transforms
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
 
 import environment
 
@@ -63,6 +64,7 @@ class CNP(torch.nn.Module):
             The NLL loss.
         '''
         mean, std = self.forward(observation, target, observation_mask)
+
         dist = torch.distributions.Normal(mean, std)
         nll = -dist.log_prob(target_truth)
         if target_mask is not None:
@@ -193,7 +195,7 @@ def bezier(p, steps=100):
 
 
 if __name__ == "__main__":
-    env = Hw5Env(render_mode="gui")
+    env = Hw5Env(render_mode="offscreen")
     states_arr = []
     for i in range(100):
         env.reset()
@@ -212,6 +214,9 @@ if __name__ == "__main__":
         states = np.stack(states)
         states_arr.append(states)
         print(f"Collected {i+1} trajectories.", end="\r")
+
+    with open("cnmp_dataset.pkl", "wb") as f:
+        pickle.dump(states_arr, f)
 
     fig, ax = plt.subplots(1, 2)
     for states in states_arr:
